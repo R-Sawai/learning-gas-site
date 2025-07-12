@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>学習クイズサイト</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800 p-4">
+  <div class="max-w-xl mx-auto bg-white shadow-md rounded-lg p-6" id="quiz-container">
+    <h1 class="text-2xl font-bold mb-4 text-center">クイズに挑戦！</h1>
+    <div id="question-box" class="space-y-4">
+      <!-- 質問と選択肢がここに動的に入ります -->
+    </div>
+    <div id="navigation" class="mt-6 text-center">
+      <button id="next-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">次へ</button>
+    </div>
+    <div id="result" class="mt-6 text-center text-xl font-semibold text-green-600 hidden"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "HTMLの略は？",
+        options: ["Hyper Trainer Marking Language", "Hyper Text Markup Language", "High Text Machine Language", "Hyper Text Markdown Language"],
+        answer: 1
+      },
+      {
+        question: "JavaScriptで変数を宣言する方法は？",
+        options: ["var", "let", "const", "すべて正しい"],
+        answer: 3
+      },
+      {
+        question: "CSSの役割は？",
+        options: ["データの保存", "ページの構造設計", "見た目の装飾", "Webサーバー構築"],
+        answer: 2
+      },
+      {
+        question: "Reactは何？",
+        options: ["DB", "ブラウザ", "JSフレームワーク", "画像編集ソフト"],
+        answer: 2
+      },
+      {
+        question: "Gitのcloneの意味は？",
+        options: ["ブランチを切る", "プルリクを送る", "リポジトリをコピー", "履歴を削除"],
+        answer: 2
+      },
+      {
+        question: "HTTPは何の略？",
+        options: ["Hyper Text Transfer Protocol", "Hyper Tool Transfer Protocol", "Host Transfer Text Protocol", "None"],
+        answer: 0
+      },
+      {
+        question: "JavaScriptで関数を作るには？",
+        options: ["func()", "define()", "function", "create()"],
+        answer: 2
+      },
+      {
+        question: "フロントエンドのライブラリは？",
+        options: ["Django", "Flask", "Laravel", "Vue.js"],
+        answer: 3
+      },
+      {
+        question: "Tailwind CSSの特徴は？",
+        options: ["ユーティリティファースト", "AIベース", "バックエンド統合", "無限スクロール特化"],
+        answer: 0
+      },
+      {
+        question: "HTMLでリンクを作るタグは？",
+        options: ["<div>", "<span>", "<a>", "<link>"],
+        answer: 2
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const questionBox = document.getElementById("question-box");
+    const nextBtn = document.getElementById("next-btn");
+    const resultBox = document.getElementById("result");
+
+    function loadQuestion() {
+      const q = quizData[currentQuestion];
+      questionBox.innerHTML = `
+        <h2 class="text-xl font-semibold">${currentQuestion + 1}. ${q.question}</h2>
+        <div class="space-y-2">
+          ${q.options.map((opt, i) => `
+            <button class="block w-full text-left px-4 py-2 bg-gray-100 border rounded hover:bg-blue-100" onclick="selectAnswer(${i})">
+              ${opt}
+            </button>`).join("")}
+        </div>
+      `;
+      nextBtn.classList.add("hidden");
+    }
+
+    function selectAnswer(selected) {
+      const correct = quizData[currentQuestion].answer;
+      const buttons = questionBox.querySelectorAll("button");
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === correct) {
+          btn.classList.add("bg-green-200");
+        } else if (idx === selected) {
+          btn.classList.add("bg-red-200");
+        }
+      });
+      if (selected === correct) score++;
+      nextBtn.classList.remove("hidden");
+    }
+
+    nextBtn.onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      questionBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+      resultBox.classList.remove("hidden");
+      resultBox.textContent = `結果：${score} / ${quizData.length} 問正解！`;
+    }
+
+    // 初期化
+    loadQuestion();
+  </script>
+</body>
+
+</html>
