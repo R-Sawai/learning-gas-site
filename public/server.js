@@ -1,8 +1,15 @@
 
+const questions = [{ "question": "JavaScriptで変数を宣言する方法は？", "options": ["var", "let", "const", "すべて正しい"], "answer": 3 }, { "question": "CSSの役割は？", "options": ["データの保存", "ページの構造設計", "見た目の装飾", "Webサーバー構築"], "answer": 2 }, { "question": "Reactは何？", "options": ["DB", "ブラウザ", "JSフレームワーク", "画像編集ソフト"], "answer": 2 }, { "question": "Gitのcloneの意味は？", "options": ["ブランチを切る", "プルリクを送る", "リポジトリをコピー", "履歴を削除"], "answer": 2 }, { "question": "HTTPは何の略？", "options": ["Hyper Text Transfer Protocol", "Hyper Tool Transfer Protocol", "Host Transfer Text Protocol", "None"], "answer": 0 }, { "question": "JavaScriptで関数を作るには？", "options": ["func()", "define()", "function", "create()"], "answer": 2 }, { "question": "フロントエンドのライブラリは？", "options": ["Django", "Flask", "Laravel", "Vue.js"], "answer": 3 }, { "question": "Tailwind CSSの特徴は？", "options": ["ユーティリティファースト", "AIベース", "バックエンド統合", "無限スクロール特化"], "answer": 0 }, { "question": "HTMLでリンクを作るタグは？", "options": ["<div>", "<span>", "<a>", "<link>"], "answer": 2 }];
+
+
 /** GETメソッド */
 function doGet() {
-  /** @type {{key: string, question: string, choices: string[], answer: number}[]} */
+
+
+  /** @type {{question: string, choices: string[], answer: number}[]} */
+  /*
   const questions = [];
+
   questions.push({
     key: 1,
     question: 'テスト問題',
@@ -19,14 +26,14 @@ function doGet() {
       item.answer
     );
   }
+  */
 
   const temp = HtmlService.createTemplateFromFile('index');
-  temp.initialData = {
-    test: 123,
-    aaa: 'aiueo',
-  };
+  temp.initialData = questions;
+  const output = temp.evaluate();
+  output.addMetaTag('viewport', 'width=device-width, initial-scale=1');
 
-  return temp.evaluate();
+  return output;
 }
 
 
@@ -39,6 +46,24 @@ function appendQuestion(key, question, choices, answer) {
   const lastRow = sheet.getLastRow();
   const r = sheet.getRange(lastRow + 1, 1, 1, 5)
     .setValues([[new Date(), key, question, choices.join(','), answer]]);
+}
+
+/**
+ * 問題を取得します
+ * @param {number} amount 取得する問題数
+ * @returns {{ question: string; options: string[]; answer: number; }}
+ */
+function getQuizData(amount) {
+  return {
+    "question": "HTMLの略は？",
+    "options": [
+      "Hyper Trainer Marking Language",
+      "Hyper Text Markup Language",
+      "High Text Machine Language",
+      "Hyper Text Markdown Language"
+    ],
+    "answer": 1
+  };
 }
 
 function chatGptSample() {
