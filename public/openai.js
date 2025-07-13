@@ -96,7 +96,7 @@ function functionCall() {
 
   // 結果の変換（function callingの実行）
   const message = json?.choices?.[0]?.message;
-  const isComplete = (!(message?.function_call) && !(message?.function_call));
+  const isComplete = Boolean(message?.function_call);
 
   /** @type {{ isComplete: boolean; functionCall: { name: string; arguments: string; } | null; message: string | null; }} */
   const result = {
