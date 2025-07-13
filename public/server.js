@@ -15,12 +15,12 @@ function doGet() {
 
 /**
  * 問題を追加します
- * @param {any} genre
- * @param {any} question
- * @param {any[]} choices 現状4枠のみ対応
- * @param {any} answer
+ * @param {any} examType 試験の種類
+ * @param {any} question 問題
+ * @param {any[]} choices 選択肢（現状4枠のみ対応）
+ * @param {any} answer 答えのインデックス
  */
-function appendQuestion(genre, question, choices, answer) {
+function appendQuestion(examType, question, choices, answer) {
   const sheet = SpreadsheetApp
     .getActiveSpreadsheet()
     .getSheetById(0);
@@ -31,7 +31,7 @@ function appendQuestion(genre, question, choices, answer) {
   sheet.getRange(lastRow + 1, 1, 1, 8)
     .setValues([[
       new Date(),
-      genre,
+      examType,
       question,
       choices[0],
       choices[1],
@@ -44,30 +44,58 @@ function appendQuestion(genre, question, choices, answer) {
 
 /**
  * 問題を取得します（HTML側から呼び出す関数）
- * @param {number} amount 取得する問題数
- * @returns {{ question: string; options: string[]; answer: number; }}
+ * @returns {{ examType: string; question: string; options: string[]; answer: number; }}
  */
-function getQuizData(amount) {
+function getQuizData() {
 
-  // 表からクイズデータの読み込み
-  const sheet = SpreadsheetApp
-    .getActiveSpreadsheet()
-    .getSheetById(0);
-  if (!sheet) { return { question: '', options: [], answer: -1 }; }
-  const lastRow = sheet.getLastRow() - 1;
-  const tableData = sheet.getRange(2, 1, lastRow, 8).getValues();
+  /** fcの結果 */
+  const fcResult = functionCall();
 
-  /** @type {{ question: string; options: string[]; answer: number; }[]} */
-  const quizData = [];
-  for (let row of tableData) {
-    quizData.push({
-      question: row[2],
-      options: [...row.slice(3, 7)],
-      answer: row[7],
-    });
+  if (fcResult.isComplete && fcResult.functionCall) {
+    const functionName = fcResult.functionCall.name;
+    const functionArguments = JSON.parse(fcResult.functionCall.arguments);
+    switch (functionName) {
+      case 'appendQuestion':
+        /** @type {{ examType: string; question: string; options: string[]; answer: number; }} */
+        const quiz = {
+          examType: functionArguments.examType ?? '',
+          question: functionArguments.question ?? '',
+          options: functionArguments.choices ?? [],
+          answer: functionArguments.answer ?? -1,
+        };
+        appendQuestion(
+          quiz.examType,
+          quiz.question,
+          quiz.options,
+          quiz.answer
+        );
+        return quiz;
+    }
+  } else {
+    // 表からクイズデータの読み込み
+    const sheet = SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetById(0);
+    if (!sheet) { return { examType: '', question: '', options: [], answer: -1 }; }
+    const lastRow = sheet.getLastRow() - 1;
+    const tableData = sheet.getRange(2, 1, lastRow, 8).getValues();
+
+    // 表データをクイズデータに変換
+    /** @type {{ examType: string; question: string; options: string[]; answer: number; }[]} */
+    const quizData = [];
+    for (let row of tableData) {
+      quizData.push({
+        examType: row[1],
+        question: row[2],
+        options: [...row.slice(3, 7)],
+        answer: row[7],
+      });
+    }
+
+    const idx = Math.floor(Math.random() * quizData.length);
+    return quizData[idx];
   }
 
-  const idx = Math.floor(Math.random() * quizData.length);
-  return quizData[idx];
+  return { examType: '', question: '', options: [], answer: -1 };
 }
 

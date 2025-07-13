@@ -12,6 +12,8 @@ if (import.meta.env.DEV) {
 
 /** クイズのデータ型 */
 interface QuizDataType {
+    /** 試験の種類 */
+    examType: string;
     /** 問題 */
     question: string;
     /** 解答群 */
@@ -56,6 +58,7 @@ export const App: FC = () => {
                             .withSuccessHandler(result => {
                                 if (!result) { return; }
                                 const quiz: QuizDataType = {
+                                    examType: result.examType ?? '',
                                     question: result.question ?? '',
                                     options: result.options ?? [],
                                     answer: result.answer ?? -1,
@@ -64,7 +67,7 @@ export const App: FC = () => {
                                 res();
                             })
                             .withFailureHandler(rej)
-                            .getQuizData(3);
+                            .getQuizData();
                     });
                 };
 
