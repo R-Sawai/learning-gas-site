@@ -10,8 +10,22 @@
 - [Google スプレッドシート](https://developers.google.com/workspace/sheets?hl=ja)：データ保存用
 
 
-## 概要
+## フォルダ構成
+```
+.
+├── public
+│   ├── openai.js       // OpenAI APIとやり取りする部分
+│   └── server.js       // メイン 表への追加やAppの表示
+├── services
+│   └── gasClient.ts    // 開発用の仮サーバー処理（本番では未使用）
+├── src
+│   ├── App.tsx         // メインアプリケーション
+│   └── Main.tsx        // indexのマウント処理
+└── index.html          // React Appのエンドポイント
+```
 
+
+## 概要
 ```mermaid
 sequenceDiagram
     participant App.tsx as React App
