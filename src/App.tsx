@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type FC } from "react";
-import { GasClientTest } from "../services/google-apps-script-client";
+import { useEffect, useRef, useState, type FC } from 'react';
+import { GasClientTest } from '../services/gasClientTest';
 
 let GasClient: GasClientTest;
 if (import.meta.env.DEV) {
-    GasClient = GasClientTest;
+    GasClient = new GasClientTest();
 } else {
     // 本番環境ではGASのgoogleを用いる
     //@ts-ignore
@@ -22,6 +22,8 @@ interface QuizDataType {
 
 export const App: FC = () => {
 
+    const MAX_QUIZ_LENGTH = 10;
+
     // クイズデータ
     const [quizList, setQuizList] = useState<QuizDataType[] | null>(null);
     // 現在の問題番号
@@ -39,22 +41,40 @@ export const App: FC = () => {
     };
 
 
-    const isEffectedQuizLoad = useRef(false);
+    /** 
+     * クイズ読み込み用Effectが実行されたか
+     * （StrictModeによる二重取得を無視するための変数）
+     */
+    const isEffectedLoadQuiz = useRef(false);
     // クイズデータの取得
     useEffect(() => {
-        // StrictModeによる二重取得を無視
         (async () => {
-            if (!isEffectedQuizLoad.current) {
-                await GasClient.script.run
-                    .withSuccessHandler(result => {
-                        //* 厳密にチェックすべきかも
-                        addQuiz(result);
-                    })
-                    .getQuizData(3);
+            if (!isEffectedLoadQuiz.current) {
+                const loadQuiz = async () => {
+                    await new Promise<void>((res, rej) => {
+                        GasClient.script.run
+                            .withSuccessHandler(result => {
+                                if (!result) { return; }
+                                const quiz: QuizDataType = {
+                                    question: result.question ?? '',
+                                    options: result.options ?? [],
+                                    answer: result.answer ?? -1,
+                                };
+                                addQuiz(quiz);
+                                res();
+                            })
+                            .withFailureHandler(rej)
+                            .getQuizData(3);
+                    });
+                };
+
+                for (let i = 0; i < MAX_QUIZ_LENGTH; i++) {
+                    await loadQuiz();
+                }
             }
         })();
 
-        isEffectedQuizLoad.current = true;
+        isEffectedLoadQuiz.current = true;
     }, []);
 
     // クイズデータが存在しなければロード
@@ -95,17 +115,25 @@ export const App: FC = () => {
             <div className="max-w-xl mx-auto p-6 text-center">
                 <h1 className="text-2xl font-bold mb-4">クイズ終了！</h1>
                 <p className="text-xl text-green-600 font-semibold">
-                    正解数: {score} / {quizList.length}
+                    正解数: {score} / {MAX_QUIZ_LENGTH}
                 </p>
             </div>
         );
     }
 
     const q = quizList[currentIndex];
+    const isLoadedAllQuiz = (MAX_QUIZ_LENGTH === quizList.length);
+    /** 次へボタンが押せるかの判定 */
+    const canPushNext = (isLoadedAllQuiz || (currentIndex !== quizList.length - 1));
 
     return (
-        <div className="w-screen h-screen flex justify-center items-center p-3 bg-gray-100">
-            <div className="max-w-xl p-6 bg-white shadow-xl rounded-xl space-y-6">
+        <div className="w-screen h-screen p-3 bg-gray-100">
+            <div className="w-md mx-auto p-6 bg-white shadow-xl rounded-xl space-y-6">
+                {/* 進行バー */}
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div className="bg-blue-600 h-2.5 rounded-full transition-[width]" style={{ width: `${currentIndex / MAX_QUIZ_LENGTH * 100}%` }}></div>
+                </div>
+
                 {/* 問題文 */}
                 <h1 className="text-xl font-bold">
                     {currentIndex + 1}. {q.question}
@@ -136,9 +164,13 @@ export const App: FC = () => {
                 <div className={`text-center ${selectedIndex !== null ? '' : 'hidden'}`}>
                     <button
                         onClick={handleNext}
-                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600
+                            ${canPushNext ? '' : 'cursor-wait'}`}
+                        disabled={!canPushNext}
                     >
-                        {currentIndex === quizList.length - 1 ? "結果を見る" : "次へ"}
+                        {(currentIndex === quizList.length - 1) ? (
+                            isLoadedAllQuiz ? '結果を見る' : '次へ'
+                        ) : '次へ'}
                     </button>
                 </div>
             </div>
