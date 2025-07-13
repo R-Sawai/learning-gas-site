@@ -128,7 +128,7 @@ export const App: FC = () => {
 
     return (
         <div className="w-screen h-screen p-3 bg-gray-100">
-            <div className="w-md mx-auto p-6 bg-white shadow-xl rounded-xl space-y-6">
+            <div className="max-w-md mx-auto p-6 bg-white shadow-xl rounded-xl space-y-6">
                 {/* 進行バー */}
                 <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                     <div className="bg-blue-600 h-2.5 rounded-full transition-[width]" style={{ width: `${currentIndex / MAX_QUIZ_LENGTH * 100}%` }}></div>
