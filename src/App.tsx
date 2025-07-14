@@ -26,7 +26,8 @@ export const App: FC = () => {
 
     const MAX_QUIZ_LENGTH = 10;
 
-    const [examType, _setExamType] = useState<'AWS CLF' | 'AWS SAA' | 'GCP CDL' | 'GCP ACE'>('AWS CLF');
+    const examTypes = ['AWS_CLF', 'AWS_SAA', 'GCP_CDL', 'GCP_ACE'] as const;
+    const [examType, setExamType] = useState<'AWS_CLF' | 'AWS_SAA' | 'GCP_CDL' | 'GCP_ACE'>();
 
     // クイズデータ
     const [quizList, setQuizList] = useState<QuizDataType[] | null>(null);
@@ -44,7 +45,6 @@ export const App: FC = () => {
         setQuizList(prev => (prev) ? [...prev, quiz] : [quiz]);
     };
 
-
     /** 
      * クイズ読み込み用Effectが実行されたか
      * （StrictModeによる二重取得を無視するための変数）
@@ -52,40 +52,66 @@ export const App: FC = () => {
     const isEffectedLoadQuiz = useRef(false);
     // クイズデータの取得
     useEffect(() => {
-        (async () => {
-            if (!isEffectedLoadQuiz.current) {
-                const loadQuiz = async () => {
-                    await new Promise<void>((res, rej) => {
-                        GasClient.script.run
-                            .withSuccessHandler(result => {
-                                if (!result) { return; }
-                                const quiz: QuizDataType = {
-                                    examType: result.examType ?? '',
-                                    question: result.question ?? '',
-                                    options: result.options ?? [],
-                                    answer: result.answer ?? -1,
-                                };
-                                addQuiz(quiz);
-                                res();
-                            })
-                            .withFailureHandler(rej)
-                            .getQuizData(examType);
-                    });
-                };
+        if (examType) {
+            (async () => {
+                if (!isEffectedLoadQuiz.current) {
+                    const loadQuiz = async () => {
+                        await new Promise<void>((res, rej) => {
+                            GasClient.script.run
+                                .withSuccessHandler(result => {
+                                    if (!result) { return; }
+                                    const quiz: QuizDataType = {
+                                        examType: result.examType ?? '',
+                                        question: result.question ?? '',
+                                        options: result.options ?? [],
+                                        answer: result.answer ?? -1,
+                                    };
+                                    addQuiz(quiz);
+                                    res();
+                                })
+                                .withFailureHandler(rej)
+                                .getQuizData(examType);
+                        });
+                    };
 
-                for (let i = 0; i < MAX_QUIZ_LENGTH; i++) {
-                    await loadQuiz();
+                    for (let i = 0; i < MAX_QUIZ_LENGTH; i++) {
+                        await loadQuiz();
+                    }
                 }
-            }
-        })();
+            })();
+            isEffectedLoadQuiz.current = true;
+        }
+    }, [examType]);
 
-        isEffectedLoadQuiz.current = true;
-    }, []);
+
+    // 試験タイプが未指定なら選択画面（本当は避けるべきだが小規模のため）
+    if (!examType) {
+        return (
+            <div className="w-screen h-screen p-3 bg-gray-100">
+                <div className="max-w-md mx-auto p-6 bg-white shadow-xl rounded-xl">
+                    <h2 className="text-xl mb-4 text-center">資格を選択してください</h2>
+                    <div className="space-y-4">
+                        {examTypes.map(cert => (
+                            <div
+                                key={cert}
+                                className="bg-gray-100 rounded-md shadow hover:shadow-md cursor-pointer transition p-4"
+                                onClick={() => setExamType(cert)}
+                            >
+                                <span className="text-base font-medium">{cert}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // クイズデータが存在しなければロード
     if (!quizList) {
         return (
-            <p>読み込み中...</p>
+            <div className="flex h-screen justify-center items-center" aria-label="読み込み中">
+                <div className="animate-ping h-4 w-4 bg-blue-400 rounded-full"></div>
+            </div>
         );
     }
 

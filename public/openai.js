@@ -13,7 +13,7 @@ const CHAT_GPT_VER = 'gpt-4o-mini';
 
 /**
  * パラメータに応じて問題を生成するようOpenAI APIを叩きます
- * @param {'AWS CLF' | 'AWS SAA' | 'GCP CDL' | 'GCP ACE'} examType 
+ * @param {'AWS_CLF' | 'AWS_SAA' | 'GCP_CDL' | 'GCP_ACE'} examType 
  * @return {{ isComplete: boolean; functionCall: { name: string; arguments: string; } | null; message: string | null; }}
  */
 function functionCall(examType) {
@@ -58,7 +58,7 @@ function functionCall(examType) {
             'question': {
               'type': 'string',
               'description': 'The type of certification exam.',
-              'enum': ['AWS CLF', 'AWS SAA', 'GCP CDL', 'GCP ACE']
+              'enum': ['AWS_CLF', 'AWS_SAA', 'GCP_CDL', 'GCP_ACE']
             },
             'choices': {
               'type': 'array',

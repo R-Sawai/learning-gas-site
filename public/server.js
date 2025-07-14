@@ -44,10 +44,10 @@ function appendQuestion(examType, question, choices, answer) {
 
 /**
  * 問題を取得します（HTML側から呼び出す関数）
- * @param {'AWS CLF' | 'AWS SAA' | 'GCP CDL' | 'GCP ACE'} examType 
+ * @param {'AWS_CLF' | 'AWS_SAA' | 'GCP_CDL' | 'GCP_ACE'} examType 
  * @returns {{ examType: string; question: string; options: string[]; answer: number; }}
  */
-function getQuizData(examType = 'AWS CLF') {
+function getQuizData(examType = 'AWS_CLF') {
 
   /** fcの結果 */
   const fcResult = functionCall(examType);
