@@ -13,7 +13,7 @@
 ## フォルダ構成
 ```
 .
-├── public
+├── public              // GAS側のコード
 │   ├── openai.js       // OpenAI APIとやり取りする部分
 │   └── server.js       // メイン 表への追加やAppの表示
 ├── services

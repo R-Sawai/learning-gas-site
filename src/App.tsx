@@ -26,6 +26,8 @@ export const App: FC = () => {
 
     const MAX_QUIZ_LENGTH = 10;
 
+    const [examType, _setExamType] = useState<'AWS CLF' | 'AWS SAA' | 'GCP CDL' | 'GCP ACE'>('AWS CLF');
+
     // クイズデータ
     const [quizList, setQuizList] = useState<QuizDataType[] | null>(null);
     // 現在の問題番号
@@ -67,7 +69,7 @@ export const App: FC = () => {
                                 res();
                             })
                             .withFailureHandler(rej)
-                            .getQuizData();
+                            .getQuizData(examType);
                     });
                 };
 
